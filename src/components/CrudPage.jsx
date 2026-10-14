@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Modal from './Modal.jsx';
+import VariantEditor from './VariantEditor.jsx';
 import { useToast } from './Toast.jsx';
 import { Plus, Edit2, Trash2, Search } from 'lucide-react';
 
@@ -39,7 +40,8 @@ export default function CrudPage({
   const openNew = () => {
     const blank = { __isNew: true };
     formFields.forEach((f) => {
-      if (f.type === 'array') blank[f.key] = '';
+      if (f.type === 'variant-editor') blank[f.key] = { variant_config: {}, variant_prices: {}, variant_stock: {} };
+      else if (f.type === 'array') blank[f.key] = '';
       else if (f.type === 'boolean') blank[f.key] = !!f.default;
       else blank[f.key] = f.default ?? '';
     });
@@ -49,7 +51,13 @@ export default function CrudPage({
   const openEdit = (row) => {
     const copy = { ...row };
     formFields.forEach((f) => {
-      if (f.type === 'array') {
+      if (f.type === 'variant-editor') {
+        copy[f.key] = {
+          variant_config: row.variant_config || {},
+          variant_prices: row.variant_prices || {},
+          variant_stock: row.variant_stock || {},
+        };
+      } else if (f.type === 'array') {
         copy[f.key] = Array.isArray(row[f.key]) ? row[f.key].join('\n') : (row[f.key] || '');
       }
     });
@@ -212,6 +220,11 @@ export default function CrudPage({
                 {f.type === 'textarea' ? (
                   <textarea className="neu-input" rows={3} value={editing[f.key] ?? ''}
                     onChange={(e) => setEditing({ ...editing, [f.key]: e.target.value })} />
+                ) : f.type === 'variant-editor' ? (
+                  <VariantEditor
+                    value={editing[f.key]}
+                    onChange={(next) => setEditing({ ...editing, [f.key]: next })}
+                  />
                 ) : f.type === 'array' ? (
                   <textarea className="neu-input" rows={3} placeholder={f.placeholder || 'One per line'}
                     value={editing[f.key] ?? ''}
