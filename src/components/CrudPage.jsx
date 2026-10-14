@@ -80,6 +80,15 @@ export default function CrudPage({
         let v = editing[f.key];
         if (f.type === 'number') v = (v === '' || v == null) ? (f.default ?? 0) : Number(v);
         else if (f.type === 'boolean') v = !!v;
+        else if (f.type === 'variant-editor') {
+          const obj = editing[f.key];
+          if (obj && typeof obj === 'object') {
+            payload.variant_config = obj.variant_config || {};
+            payload.variant_prices = obj.variant_prices || {};
+            payload.variant_stock = obj.variant_stock || {};
+          }
+          return;
+        }
         else if (f.type === 'array') {
           v = typeof v === 'string'
             ? v.split('\n').map(s => s.trim()).filter(Boolean)
